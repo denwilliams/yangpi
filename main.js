@@ -11,7 +11,8 @@ const statusPort = config.get('status_port');
 const app = express()
 .use('/', (req, res) => {
   res.status(isOk ? 200 : 500).send();
-});
+})
+.listen(statusPort);
 
 const mqttHost = config.get('mqtt_host');
 const client  = mqtt.connect('mqtt://' + mqttHost);
