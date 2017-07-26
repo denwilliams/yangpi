@@ -37,7 +37,7 @@ client.on('offline', () => {
 });
 
 client.on('message', (topic, message) => {
-  console.log('Got message', message.toString());
+  console.log('Got message', topic, message.toString());
   switch (topic) {
     case 'yangpi/trigger':
       trigger();
@@ -51,6 +51,7 @@ let onTimeout;
 let offTimeout;
 
 function trigger() {
+  console.log('Toggling garage door', new Date());
   wpi.pinMode(7, wpi.OUTPUT);
   if (onTimeout) clearTimeout(onTimeout);
   if (offTimeout) clearTimeout(offTimeout);
