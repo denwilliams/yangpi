@@ -1,4 +1,9 @@
 # yangpi
+
+**NOTE: this doesn't run on nodejs 9+. See [this link](https://github.com/WiringPi/WiringPi-Node/issues/68#issuecomment-475258303).**
+
+## Overview
+
 Yet another Garage Pi
 
 Because everyone needs their own!
