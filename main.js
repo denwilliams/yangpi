@@ -66,7 +66,7 @@ client.on("message", (topic, message) => {
       isOpen = message.toString() === "true";
       console.log("Garage door is open: " + isOpen);
       // for google assistant mqtt integration
-      client.publish("yangpi/google/status", isOpen ? 100 : 0);
+      client.publish("yangpi/google/status", isOpen ? "100" : "0");
       break;
     case "yangpi/google/set":
       const doClose = JSON.parse(message.toString()) === 0;
