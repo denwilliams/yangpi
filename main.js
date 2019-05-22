@@ -26,6 +26,7 @@ client.on("connect", () => {
   client.subscribe("yangpi/open");
   client.subscribe("yangpi/close");
   client.subscribe("yangpi/status");
+  client.subscribe("yangpi/google/set");
   client.subscribe("yangpi/ping");
 });
 
@@ -56,6 +57,10 @@ client.on("message", (topic, message) => {
     case "yangpi/status":
       isOpen = message.toString() === "true";
       console.log("Garage door is open: " + isOpen);
+      client.publish("yangpi/google/status", isOpen ? 100 : 0);
+      break;
+    case "yangpi/google/set":
+      console.log("Google set: " + message.toString());
       break;
     default:
       break;
