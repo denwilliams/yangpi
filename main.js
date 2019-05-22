@@ -42,6 +42,14 @@ client.on("offline", () => {
   updateIsOk();
 });
 
+function open() {
+  if (!isOpen) trigger();
+}
+
+function close() {
+  if (isOpen) trigger();
+}
+
 client.on("message", (topic, message) => {
   console.log("Got message", topic, message.toString());
   switch (topic) {
@@ -49,18 +57,25 @@ client.on("message", (topic, message) => {
       trigger();
       break;
     case "yangpi/open":
-      if (!isOpen) trigger();
+      open();
       break;
     case "yangpi/close":
-      if (isOpen) trigger();
+      close();
       break;
     case "yangpi/status":
       isOpen = message.toString() === "true";
       console.log("Garage door is open: " + isOpen);
+      // for google assistant mqtt integration
       client.publish("yangpi/google/status", isOpen ? 100 : 0);
       break;
     case "yangpi/google/set":
-      console.log("Google set: " + message.toString());
+      const doClose = JSON.parse(message.toString()) === 0;
+      console.log("Google open door: " + !doClose);
+      if (doClose) {
+        close();
+      } else {
+        open();
+      }
       break;
     default:
       break;
