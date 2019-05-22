@@ -1,58 +1,72 @@
-const wpi = require('wiringpi-node');
-wpi.setup('wpi');
-const mqtt = require('mqtt');
-const config = require('loke-config').create('yangpi');
-const express = require('express');
+const wpi = require("wiringpi-node");
+wpi.setup("wpi");
+const mqtt = require("mqtt");
+const config = require("loke-config").create("yangpi");
+const express = require("express");
 
 let isOk = false;
 let mqttConnected = false;
 
-const statusPort = config.get('status_port');
+const statusPort = config.get("status_port");
 const app = express()
-.use('/', (req, res) => {
-  res.status(isOk ? 200 : 500).send();
-})
-.listen(statusPort);
+  .use("/", (req, res) => {
+    res.status(isOk ? 200 : 500).send();
+  })
+  .listen(statusPort);
 
-const mqttHost = config.get('mqtt_host');
-const client  = mqtt.connect('mqtt://' + mqttHost);
+const mqttHost = config.get("mqtt_host");
+const client = mqtt.connect("mqtt://" + mqttHost);
+let isOpen = false;
 
-client.on('connect', () => {
-  console.log('Connected');
+client.on("connect", () => {
+  console.log("Connected");
   mqttConnected = true;
   updateIsOk();
-  client.subscribe('yangpi/trigger');
-  client.subscribe('yangpi/ping');
-})
+  client.subscribe("yangpi/trigger");
+  client.subscribe("yangpi/open");
+  client.subscribe("yangpi/close");
+  client.subscribe("yangpi/status");
+  client.subscribe("yangpi/ping");
+});
 
-client.on('close', () => {
-  console.log('Close');
+client.on("close", () => {
+  console.log("Close");
   mqttConnected = false;
   updateIsOk();
 });
 
-client.on('offline', () => {
-  console.log('Offline');
+client.on("offline", () => {
+  console.log("Offline");
   mqttConnected = false;
   updateIsOk();
 });
 
-client.on('message', (topic, message) => {
-  console.log('Got message', topic, message.toString());
+client.on("message", (topic, message) => {
+  console.log("Got message", topic, message.toString());
   switch (topic) {
-    case 'yangpi/trigger':
+    case "yangpi/trigger":
       trigger();
+      break;
+    case "yangpi/open":
+      if (!isOpen) trigger();
+      break;
+    case "yangpi/close":
+      if (isOpen) trigger();
+      break;
+    case "yangpi/status":
+      isOpen = message.toString() === "true";
+      console.log("Garage door is open: " + isOpen);
       break;
     default:
       break;
   }
-})
+});
 
 let onTimeout;
 let offTimeout;
 
 function trigger() {
-  console.log('Toggling garage door', new Date());
+  console.log("Toggling garage door", new Date());
   wpi.pinMode(7, wpi.OUTPUT);
   if (onTimeout) clearTimeout(onTimeout);
   if (offTimeout) clearTimeout(offTimeout);
